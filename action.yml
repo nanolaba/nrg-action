@@ -2,7 +2,7 @@ name: 'Nanolaba Readme Generator'
 description: 'Generate multi-language README/Markdown files from a single .src.md template.'
 author: 'nanolaba'
 branding:
-  icon: 'file-text'
+  icon: 'layers'
   color: 'purple'
 
 inputs:
