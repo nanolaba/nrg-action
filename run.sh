@@ -17,6 +17,7 @@ INPUT_FILE="${INPUT_FILE:-}"
 INPUT_FILES="${INPUT_FILES:-}"
 INPUT_CHARSET="${INPUT_CHARSET:-UTF-8}"
 INPUT_MODE="${INPUT_MODE:-generate}"
+INPUT_CHECK_PATHS="${INPUT_CHECK_PATHS:-}"
 INPUT_NRG_VERSION="${INPUT_NRG_VERSION:-latest}"
 INPUT_LOG_LEVEL="${INPUT_LOG_LEVEL:-info}"
 
@@ -52,6 +53,10 @@ if [[ -n "$INPUT_FILE" && -n "$INPUT_FILES" ]]; then
 fi
 if [[ -z "$INPUT_FILE" && -z "$INPUT_FILES" ]]; then
   die "One of 'file' or 'files' must be provided."
+fi
+
+if [[ -n "$INPUT_CHECK_PATHS" && "$INPUT_MODE" != "check" ]]; then
+  die "Input 'check-paths' is only valid with mode=check (got mode=$INPUT_MODE)."
 fi
 
 FILES=()
@@ -109,13 +114,19 @@ PRE_HASHES_FILE="${RUNNER_TEMP:-/tmp}/nrg-pre-hashes.txt"
 snapshot_md_hashes > "$PRE_HASHES_FILE"
 
 # === 5. run NRG ===
-# NOTE: invoke main class explicitly via -cp because the v1.0 release jar's
-# manifest records the wrong Main-Class (org.nanolaba… instead of com.nanolaba…).
+# Invoke main class explicitly via -cp to remain compatible with older release
+# jars whose manifest may not advertise the correct Main-Class.
 ARGS=()
 case "$INPUT_MODE" in
   check)    ARGS+=(--check) ;;
   validate) ARGS+=(--validate) ;;
 esac
+
+if [[ -n "$INPUT_CHECK_PATHS" ]]; then
+  while IFS= read -r line; do
+    [[ -n "$line" ]] && ARGS+=(--check-paths "$line")
+  done <<< "$INPUT_CHECK_PATHS"
+fi
 
 EXIT_CODE=0
 for f in "${FILES[@]}"; do
