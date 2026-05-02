@@ -230,6 +230,10 @@ If the surrounding workflow already installs Java (for example, for a Maven buil
 - **Windows runner: `unzip: command not found`** — git-bash on `windows-latest` ships `unzip`, but rare images don't. Workaround: precede the action with a step that installs it (e.g. `choco install unzip`).
 - **`mode: check` works locally but fails in CI** — almost always line-ending drift on a `windows-latest` checkout. Add a `.gitattributes` with `* text=auto eol=lf` and re-commit the regenerated files.
 
+## Maintainers
+
+Release process and the `scripts/bump-action-sha.sh` helper are documented in [`MAINTAINING.md`](./MAINTAINING.md).
+
 ## License
 
 Apache 2.0 — see [`LICENSE`](./LICENSE).

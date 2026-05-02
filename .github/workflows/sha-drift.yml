@@ -1,0 +1,50 @@
+name: README/examples SHA drift check
+# Verify the nanolaba/nrg-action commit SHA pinned in README.md and
+# examples/*.yml matches the current `v1` tag tip. Fails the build if
+# they drift — typically meaning a release was cut but docs weren't
+# bumped via scripts/bump-action-sha.sh.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - 'README.md'
+      - 'examples/**.yml'
+      - '.github/workflows/sha-drift.yml'
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify pinned SHA matches v1 tag
+        run: |
+          set -euo pipefail
+          # Resolve canonical SHA from upstream `v1` tag. `git ls-remote`
+          # is unauthenticated and avoids GitHub API rate limits; works
+          # for PRs from forks because the tag is public.
+          v1_sha="$(git ls-remote https://github.com/nanolaba/nrg-action.git v1 | awk '{print $1}')"
+          if [[ ! "$v1_sha" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "::error::Failed to resolve upstream v1 SHA (got: '$v1_sha')"
+            exit 1
+          fi
+          echo "Upstream v1 → $v1_sha"
+
+          mapfile -t pinned < <(grep -hoE 'nanolaba/nrg-action@[a-f0-9]{40}' README.md examples/*.yml \
+            | sed 's|nanolaba/nrg-action@||' | sort -u)
+
+          if [[ ${#pinned[@]} -eq 0 ]]; then
+            echo "::error::No nanolaba/nrg-action@<sha> pins found — has the docs format changed?"
+            exit 1
+          fi
+
+          drift=0
+          for sha in "${pinned[@]}"; do
+            if [[ "$sha" != "$v1_sha" ]]; then
+              echo "::error::Pinned SHA $sha != upstream v1 ($v1_sha). Run scripts/bump-action-sha.sh and commit."
+              drift=1
+            fi
+          done
+          [[ $drift -eq 0 ]] || exit 1
+          echo "All pinned SHAs match v1 ($v1_sha)."
