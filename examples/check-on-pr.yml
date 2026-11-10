@@ -13,4 +13,4 @@ jobs:
         with:
           file: README.src.md
           mode: check
-          nrg-version: '1.2'
+          nrg-version: '1.3'

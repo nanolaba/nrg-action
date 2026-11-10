@@ -12,4 +12,4 @@ jobs:
       - uses: nanolaba/nrg-action@9fae0216ed0c828f520e555912776ca624d84fb5  # v1
         with:
           file: README.src.md
-          nrg-version: '1.2'
+          nrg-version: '1.3'

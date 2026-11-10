@@ -35,7 +35,7 @@ The cost is that **every release moves `v1`, and every pinned SHA in docs goes s
 - `examples/check-on-pr.yml`
 - `examples/auto-commit.yml`
 
-Plus the `nrg-version: '1.2'` pin in the recommended example — bump separately when the upstream NRG CLI cuts a new minor.
+Plus the `nrg-version: '1.3'` pin in the recommended example — bump separately when the upstream NRG CLI cuts a new minor.
 
 ## Bumping the SHA
 

@@ -30,7 +30,10 @@ Full secure-by-default example: [`examples/recommended.yml`](./examples/recommen
 | `files` | Multi-line list of `.src.md` templates (one per line). Mutually exclusive with `file`. | — |
 | `charset` | Source file encoding. | `UTF-8` |
 | `mode` | Operation mode: `generate`, `check`, or `validate`. | `generate` |
-| `nrg-version` | NRG release tag (e.g. `v1.0`) or `latest`. | `latest` |
+| `check-paths` | Multi-line list of glob patterns (one per line) limiting which generated outputs `mode: check` compares against on-disk files. Requires `mode: check`. | — |
+| `root` | Directory the templates are confined to: imports, descriptors and output files must stay inside it. Needs NRG `v1.3` or newer. | nearest ancestor with `.git` |
+| `nrg-version` | NRG release tag (e.g. `v1.3`) or `latest`. | `latest` |
+| `nrg-sha256` | Expected sha256 of the downloaded release zip; a mismatch fails the run before the jar is executed. Use with a fixed `nrg-version`. | — |
 | `java-version` | JDK version for `actions/setup-java`. Ignored when `setup-java=false`. | `17` |
 | `java-distribution` | JDK distribution for `actions/setup-java`. | `temurin` |
 | `setup-java` | Whether the action should install Java itself. Set to `'false'` if you set up Java in a previous step. | `true` |
@@ -85,7 +88,7 @@ jobs:
       - uses: nanolaba/nrg-action@9fae0216ed0c828f520e555912776ca624d84fb5  # v1
         with:
           file: README.src.md
-          nrg-version: '1.2'
+          nrg-version: '1.3'
       - name: Commit regenerated READMEs
         run: |
           paths=("README.md" "README.*.md" ":(exclude)README.src.md")
@@ -109,7 +112,7 @@ jobs:
         with:
           file: README.src.md
           mode: check
-          nrg-version: '1.2'
+          nrg-version: '1.3'
 ```
 
 See [`examples/recommended.yml`](./examples/recommended.yml).
@@ -123,6 +126,21 @@ Three things in the workflow above deviate from a naive scaffold. CodeRabbit and
 1. **Per-job `permissions`, not top-level.** The workflow opens with `permissions: contents: read`. Only the `regenerate` job upgrades to `contents: write`, and only because it pushes a commit. The `drift-check` job stays read-only — narrowest token possible for a CI step that touches a PR.
 2. **Action pinned to a commit SHA, not a tag.** `nanolaba/nrg-action@<SHA>  # v1` is immune to tag re-pointing. `@v1` floats, so a compromised release could substitute a malicious commit under the same tag and your workflow would pick it up silently. The trailing `# v1` comment is for humans — Dependabot and Renovate can both bump the SHA when `v1` advances.
 3. **Glob paths with a pathspec exclude, not a hardcoded language list.** `paths=("README.md" "README.*.md" ":(exclude)README.src.md")` covers any future language added to `nrg.languages` (e.g. `README.de.md`) without further edits, and the `:(exclude)` keeps the source template out of the auto-commit. A static list like `git add README.md README.ru.md` silently skips new languages until someone notices.
+
+### Verifying the NRG download
+
+Pinning the action to a SHA does not pin the NRG jar the action downloads and runs. Two layers cover that:
+
+- **Release checksum (automatic).** NRG releases from `v1.3` on publish `readme-generator-X.Y.zip.sha256` next to the zip. The action downloads it and refuses a zip that does not match. For older releases it prints the checksum of what it downloaded.
+- **Your own pin (strongest).** Fix `nrg-version` and pass the checksum you expect in `nrg-sha256`. The comparison then does not depend on anything stored next to the zip:
+
+```yaml
+- uses: nanolaba/nrg-action@9fae0216ed0c828f520e555912776ca624d84fb5  # v1
+  with:
+    file: README.src.md
+    nrg-version: '1.3'
+    nrg-sha256: 9d5d58490703be4b575b489811baf4788c1a187e26d563b26d393f3591f52c62
+```
 
 ### Validate-only
 
@@ -144,7 +162,7 @@ jobs:
         with:
           file: README.src.md
           mode: validate
-          nrg-version: '1.2'
+          nrg-version: '1.3'
 ```
 
 See [`examples/check-on-pr.yml`](./examples/check-on-pr.yml) for a `mode: check` variant.
@@ -173,7 +191,7 @@ jobs:
         uses: nanolaba/nrg-action@9fae0216ed0c828f520e555912776ca624d84fb5  # v1
         with:
           file: README.src.md
-          nrg-version: '1.2'
+          nrg-version: '1.3'
       - uses: peter-evans/create-pull-request@v6
         with:
           commit-message: 'docs: regenerate README from src'
