@@ -15,7 +15,7 @@ This action is a thin composite wrapper around the [NRG CLI](https://github.com/
 
 ```yaml
 - uses: actions/checkout@v4
-- uses: nanolaba/nrg-action@9fae0216ed0c828f520e555912776ca624d84fb5  # v1
+- uses: nanolaba/nrg-action@3d8a5fc7b76f259122c3175058231a1b893c5b4a  # v1
   with:
     file: README.src.md
 ```
@@ -85,7 +85,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: nanolaba/nrg-action@9fae0216ed0c828f520e555912776ca624d84fb5  # v1
+      - uses: nanolaba/nrg-action@3d8a5fc7b76f259122c3175058231a1b893c5b4a  # v1
         with:
           file: README.src.md
           nrg-version: '1.3'
@@ -108,7 +108,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: nanolaba/nrg-action@9fae0216ed0c828f520e555912776ca624d84fb5  # v1
+      - uses: nanolaba/nrg-action@3d8a5fc7b76f259122c3175058231a1b893c5b4a  # v1
         with:
           file: README.src.md
           mode: check
@@ -117,7 +117,7 @@ jobs:
 
 See [`examples/recommended.yml`](./examples/recommended.yml).
 
-> **Current canonical SHA:** `9fae0216ed0c828f520e555912776ca624d84fb5` resolves to `v1.2` (latest at the time of writing). Bump it from the [latest release](https://github.com/nanolaba/nrg-action/releases/latest) when you upgrade.
+> **Current canonical SHA:** `3d8a5fc7b76f259122c3175058231a1b893c5b4a` resolves to `v1.3` (latest at the time of writing). Bump it from the [latest release](https://github.com/nanolaba/nrg-action/releases/latest) when you upgrade.
 
 ### Hardening notes
 
@@ -135,7 +135,7 @@ Pinning the action to a SHA does not pin the NRG jar the action downloads and ru
 - **Your own pin (strongest).** Fix `nrg-version` and pass the checksum you expect in `nrg-sha256`. The comparison then does not depend on anything stored next to the zip:
 
 ```yaml
-- uses: nanolaba/nrg-action@9fae0216ed0c828f520e555912776ca624d84fb5  # v1
+- uses: nanolaba/nrg-action@3d8a5fc7b76f259122c3175058231a1b893c5b4a  # v1
   with:
     file: README.src.md
     nrg-version: '1.3'
@@ -158,7 +158,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: nanolaba/nrg-action@9fae0216ed0c828f520e555912776ca624d84fb5  # v1
+      - uses: nanolaba/nrg-action@3d8a5fc7b76f259122c3175058231a1b893c5b4a  # v1
         with:
           file: README.src.md
           mode: validate
@@ -188,7 +188,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: nrg
-        uses: nanolaba/nrg-action@9fae0216ed0c828f520e555912776ca624d84fb5  # v1
+        uses: nanolaba/nrg-action@3d8a5fc7b76f259122c3175058231a1b893c5b4a  # v1
         with:
           file: README.src.md
           nrg-version: '1.3'
@@ -211,7 +211,7 @@ See [`examples/auto-commit.yml`](./examples/auto-commit.yml).
 Pass a heredoc list to the `files:` input (one path per line). All files are processed in a single action invocation; the jar is downloaded once:
 
 ```yaml
-- uses: nanolaba/nrg-action@9fae0216ed0c828f520e555912776ca624d84fb5  # v1
+- uses: nanolaba/nrg-action@3d8a5fc7b76f259122c3175058231a1b893c5b4a  # v1
   with:
     files: |
       README.src.md
@@ -229,7 +229,7 @@ If the surrounding workflow already installs Java (for example, for a Maven buil
   with:
     distribution: temurin
     java-version: '21'
-- uses: nanolaba/nrg-action@9fae0216ed0c828f520e555912776ca624d84fb5  # v1
+- uses: nanolaba/nrg-action@3d8a5fc7b76f259122c3175058231a1b893c5b4a  # v1
   with:
     file: README.src.md
     setup-java: 'false'

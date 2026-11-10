@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: nrg
-        uses: nanolaba/nrg-action@9fae0216ed0c828f520e555912776ca624d84fb5  # v1
+        uses: nanolaba/nrg-action@3d8a5fc7b76f259122c3175058231a1b893c5b4a  # v1
         with:
           file: README.src.md
           nrg-version: '1.3'
