@@ -32,7 +32,9 @@ Full secure-by-default example: [`examples/recommended.yml`](./examples/recommen
 | `mode` | Operation mode: `generate`, `check`, or `validate`. | `generate` |
 | `check-paths` | Multi-line list of glob patterns (one per line) limiting which generated outputs `mode: check` compares against on-disk files. Requires `mode: check`. | — |
 | `root` | Directory the templates are confined to: imports, descriptors and output files must stay inside it. Needs NRG `v1.3` or newer. | nearest ancestor with `.git` |
-| `nrg-version` | NRG release tag (e.g. `v1.3`) or `latest`. | `latest` |
+| `sandbox` | `'true'` for templates you do not trust — for example on `pull_request` from forks: templates cannot read environment variables and remote imports are refused. Needs NRG `v1.4` or newer. | `'false'` |
+| `stale-translations-base` | Git revision to compare the templates with, e.g. `${{ github.event.pull_request.base.sha }}`. The step fails when some languages changed since it and others did not (an outdated translation). Needs `fetch-depth: 0` on checkout and NRG `v1.4` or newer. | — |
+| `nrg-version` | NRG release tag (e.g. `v1.4`) or `latest`. | `latest` |
 | `nrg-sha256` | Expected sha256 of the downloaded release zip; a mismatch fails the run before the jar is executed. Use with a fixed `nrg-version`. | — |
 | `java-version` | JDK version for `actions/setup-java`. Ignored when `setup-java=false`. | `17` |
 | `java-distribution` | JDK distribution for `actions/setup-java`. | `temurin` |
@@ -44,7 +46,7 @@ Full secure-by-default example: [`examples/recommended.yml`](./examples/recommen
 
 - `generate` — write `README.md`, `README.ru.md`, … to disk. Default.
 - `check` — read-only verification. Exits non-zero with a unified diff on stderr if disk content does not match what NRG would generate. Use on pull requests.
-- `validate` — scan the template for authoring mistakes (unknown widgets, undeclared language markers, missing imports, unbalanced ignore-blocks). No files written.
+- `validate` — scan the template for authoring mistakes (unknown widgets and widget parameters, undeclared language markers, missing imports, unbalanced blocks, missing translations; NRG `v1.4` adds "did you mean" hints). Fails on errors, not on warnings. No files written.
 
 ## Outputs
 
@@ -88,7 +90,7 @@ jobs:
       - uses: nanolaba/nrg-action@3d8a5fc7b76f259122c3175058231a1b893c5b4a  # v1
         with:
           file: README.src.md
-          nrg-version: '1.3'
+          nrg-version: '1.4'
       - name: Commit regenerated READMEs
         run: |
           paths=("README.md" "README.*.md" ":(exclude)README.src.md")
@@ -112,7 +114,7 @@ jobs:
         with:
           file: README.src.md
           mode: check
-          nrg-version: '1.3'
+          nrg-version: '1.4'
 ```
 
 See [`examples/recommended.yml`](./examples/recommended.yml).
@@ -138,8 +140,8 @@ Pinning the action to a SHA does not pin the NRG jar the action downloads and ru
 - uses: nanolaba/nrg-action@3d8a5fc7b76f259122c3175058231a1b893c5b4a  # v1
   with:
     file: README.src.md
-    nrg-version: '1.3'
-    nrg-sha256: 9d5d58490703be4b575b489811baf4788c1a187e26d563b26d393f3591f52c62
+    nrg-version: '1.4'
+    nrg-sha256: ff9ccd7efee599299c4d02f847a36bb3c3471720722837b0d87a56f039aff38a
 ```
 
 ### Validate-only
@@ -162,7 +164,7 @@ jobs:
         with:
           file: README.src.md
           mode: validate
-          nrg-version: '1.3'
+          nrg-version: '1.4'
 ```
 
 See [`examples/check-on-pr.yml`](./examples/check-on-pr.yml) for a `mode: check` variant.
@@ -191,7 +193,7 @@ jobs:
         uses: nanolaba/nrg-action@3d8a5fc7b76f259122c3175058231a1b893c5b4a  # v1
         with:
           file: README.src.md
-          nrg-version: '1.3'
+          nrg-version: '1.4'
       - uses: peter-evans/create-pull-request@v6
         with:
           commit-message: 'docs: regenerate README from src'
@@ -222,10 +224,10 @@ Pass a heredoc list to the `files:` input (one path per line). All files are pro
 
 ## Skipping the built-in setup-java
 
-If the surrounding workflow already installs Java (for example, for a Maven build), you can opt out of the action's own `actions/setup-java@v4` step. Composite-action inputs are strings, so use the quoted `'false'`, not the YAML boolean:
+If the surrounding workflow already installs Java (for example, for a Maven build), you can opt out of the action's own `actions/setup-java` step. Composite-action inputs are strings, so use the quoted `'false'`, not the YAML boolean:
 
 ```yaml
-- uses: actions/setup-java@v4
+- uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78  # v6.2.0
   with:
     distribution: temurin
     java-version: '21'

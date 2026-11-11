@@ -19,6 +19,8 @@ INPUT_CHARSET="${INPUT_CHARSET:-UTF-8}"
 INPUT_MODE="${INPUT_MODE:-generate}"
 INPUT_CHECK_PATHS="${INPUT_CHECK_PATHS:-}"
 INPUT_ROOT="${INPUT_ROOT:-}"
+INPUT_SANDBOX="${INPUT_SANDBOX:-false}"
+INPUT_STALE_TRANSLATIONS_BASE="${INPUT_STALE_TRANSLATIONS_BASE:-}"
 INPUT_NRG_VERSION="${INPUT_NRG_VERSION:-latest}"
 INPUT_NRG_SHA256="${INPUT_NRG_SHA256:-}"
 INPUT_LOG_LEVEL="${INPUT_LOG_LEVEL:-info}"
@@ -168,6 +170,11 @@ if [[ -n "$INPUT_ROOT" ]]; then
   ARGS+=(--root "$INPUT_ROOT")
 fi
 
+# Only forwarded when "true": release jars up to v1.3 do not know the option.
+if [[ "$INPUT_SANDBOX" == "true" ]]; then
+  ARGS+=(--sandbox)
+fi
+
 EXIT_CODE=0
 for f in "${FILES[@]}"; do
   java -cp "$JAR" com.nanolaba.nrg.NRG \
@@ -177,6 +184,15 @@ for f in "${FILES[@]}"; do
     "${ARGS[@]+"${ARGS[@]}"}" \
     || EXIT_CODE=$?
 done
+
+# Only when asked for: release jars up to v1.3 do not know the option.
+if [[ -n "$INPUT_STALE_TRANSLATIONS_BASE" ]]; then
+  java -cp "$JAR" com.nanolaba.nrg.NRG \
+    --stale-translations "$INPUT_STALE_TRANSLATIONS_BASE" \
+    --charset "$INPUT_CHARSET" \
+    "${FILES[@]}" \
+    || EXIT_CODE=$?
+fi
 
 # === 6. post-run: outputs ===
 POST_HASHES_FILE="${RUNNER_TEMP:-/tmp}/nrg-post-hashes.txt"
